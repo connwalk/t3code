@@ -62,3 +62,23 @@ it("preserves credentials for the current subscriber and permission error codes"
     assert.isFalse(classifyCodexManagedError({ error: { code } })!.revoke);
   }
 });
+
+it("explains unsupported conversation input without suggesting a credential reset", () => {
+  const response = {
+    error: {
+      message:
+        "User subscription sharing currently supports only text, image, and file messages, item references, additional tools, compaction summaries, reasoning items, Web Search call items, developer function and custom tool call items, and programmatic tool calling items. Remove unsupported input items or use an API key instead. dummy-sensitive",
+      type: "invalid_request_error",
+      param: "input",
+      code: "subscription_sharing_unsupported_capability",
+    },
+  };
+  for (const value of [response, JSON.stringify(response)]) {
+    const failure = classifyCodexManagedError(value);
+    assert.isDefined(failure);
+    assert.include(failure!.message, "unsupported input item");
+    assert.include(failure!.message, "Start a new thread");
+    assert.notInclude(failure!.message, "dummy-sensitive");
+    assert.isFalse(failure!.revoke);
+  }
+});

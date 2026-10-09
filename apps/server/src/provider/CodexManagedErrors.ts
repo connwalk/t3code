@@ -66,6 +66,13 @@ export function classifyCodexManagedError(value: unknown) {
   for (const [code, failure] of Object.entries(failures)) {
     if (!text.includes(code)) continue;
     if (code === "subscription_sharing_unsupported_capability") {
+      if (text.includes("User subscription sharing currently supports only"))
+        return {
+          ...failure,
+          code,
+          message:
+            "ChatGPT sharing rejected an unsupported input item in this conversation. Start a new thread with a compatible runtime; retrying this conversation may repeat the error.",
+        };
       if (text.includes("tool 'namespace'"))
         return {
           ...failure,
